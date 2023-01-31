@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Disassembler;
+using DotNETDepends.Output;
 
 namespace DotNETDepends
 {
@@ -52,6 +53,7 @@ namespace DotNETDepends
         private const string PUBLISH_CONFIG = "Release";
         private bool isPublished = false;
         private readonly Dependencies dependencies = new();
+
         public SolutionReader()
         {
             //This finds the MSBuild libs from the .NET SDK
@@ -61,7 +63,7 @@ namespace DotNETDepends
         /**
          * Reads the solution and process the projects in dependency order
          */
-        public async Task ReadSolutionAsync(String path)
+        public async Task ReadSolutionAsync(String path, AnalysisOutput output)
         {
             var workspace = MSBuildWorkspace.Create();
             var solution = await workspace.OpenSolutionAsync(path).ConfigureAwait(false);
@@ -70,10 +72,10 @@ namespace DotNETDepends
             //Read all of the projects declared types and references (if ASP.NET)
             foreach (var projectId in dependencyOrderedProjects)
             {
-                await ProcessProjectAsync(projectId, solution, depGraph).ConfigureAwait(false);
+                await ProcessProjectAsync(projectId, solution, depGraph, output).ConfigureAwait(false);
             }
             await ResolveDepenedenciesAsync(solution).ConfigureAwait(false);
-            dependencies.Print();
+            dependencies.GetLinks(output);
         }
 
         /**
@@ -146,7 +148,7 @@ namespace DotNETDepends
          * This will compile everything and put all of the dependencies in to the output folder
          * so that we can resolve everything when we disassemble the ASP.NET content.
          */
-        private bool PublishSolution(Solution solution)
+        private bool PublishSolution(Solution solution, AnalysisOutput analysisOutput)
         {
             //Only do this once
             if (isPublished)
@@ -156,26 +158,33 @@ namespace DotNETDepends
             //even if the publish fails, mark it published so we don't retry
             isPublished = true;
             var dotnetPath = SDKTools.GetDotnetPath();
-            if (dotnetPath != null && solution.FilePath != null)
+            if (solution.FilePath != null)
             {
-                var startInfo = new ProcessStartInfo(dotnetPath)
+                try
                 {
-                    WorkingDirectory = Path.GetDirectoryName(solution.FilePath)
-                };
-                //Executes:
-                //dotnet publish -c Release -r win-x64 -p:PublishReadyToRun=true <solutionfile>
-                startInfo.ArgumentList.Add("publish");
-                startInfo.ArgumentList.Add("-c");
-                startInfo.ArgumentList.Add(PUBLISH_CONFIG);
-                startInfo.ArgumentList.Add("-r");
-                startInfo.ArgumentList.Add(RuntimeInformation.RuntimeIdentifier);
-                startInfo.ArgumentList.Add("-p:PublishReadyToRun=true");
-                startInfo.ArgumentList.Add(solution.FilePath);
-                var process = Process.Start(startInfo);
-                if (process != null)
+                    var startInfo = new ProcessStartInfo(dotnetPath)
+                    {
+                        WorkingDirectory = Path.GetDirectoryName(solution.FilePath)
+                    };
+                    //Executes:
+                    //dotnet publish -c Release -r win-x64 -p:PublishReadyToRun=true <solutionfile>
+                    startInfo.ArgumentList.Add("publish");
+                    startInfo.ArgumentList.Add("-c");
+                    startInfo.ArgumentList.Add(PUBLISH_CONFIG);
+                    startInfo.ArgumentList.Add("-r");
+                    startInfo.ArgumentList.Add(RuntimeInformation.RuntimeIdentifier);
+                    //PublishReadyToRun is required to precompile the ASP and Blazor files
+                    startInfo.ArgumentList.Add("-p:PublishReadyToRun=true");
+                    startInfo.ArgumentList.Add(solution.FilePath);
+                    var process = Process.Start(startInfo);
+                    if (process != null)
+                    {
+                        process.WaitForExit();
+                        return true;
+                    }
+                }catch(Exception ex)
                 {
-                    process.WaitForExit();
-                    return true;
+                    analysisOutput.AddErrorMessage("Exception: " + ex.ToString());
                 }
             }
             return false;
@@ -217,7 +226,7 @@ namespace DotNETDepends
          * It then uses Rosalyn to parse the references of any C# or VB files, regardless of
          * whether or not it is an ASP.NET project.
          */
-        private async Task ProcessProjectAsync(ProjectId projectId, Solution solution, ProjectDependencyGraph depGraph)
+        private async Task ProcessProjectAsync(ProjectId projectId, Solution solution, ProjectDependencyGraph depGraph, AnalysisOutput analysisOutput)
         {
 
             var project = solution.GetProject(projectId);
@@ -241,20 +250,20 @@ namespace DotNETDepends
                 //Check for ASP.NET files
                 if (ProjectContainsNETWebFiles(project))
                 {
-                    var pubProject = new PublishedWebProject(project, RuntimeInformation.RuntimeIdentifier, PUBLISH_CONFIG);
+                    var pubProject = new PublishedWebProject(project, RuntimeInformation.RuntimeIdentifier, PUBLISH_CONFIG, analysisOutput);
                     if (pubProject.IsSupportedSDK())
                     {
                         //If it is a supported SDK, publish the solution if it hasn't been
-                        PublishSolution(solution);
+                        PublishSolution(solution, analysisOutput);
                         //Read in the corresponding ASP.NET components.
-                        if (pubProject.Analyze(out List<SourceType> foundTypes))
+                        if (pubProject.Analyze(out List<SourceType> foundTypes, analysisOutput))
                         {
                             dependencies.AddSourceTypes(foundTypes);
                         }
                     }
                     else
                     {
-                        //TODO: Log this in the output
+                        analysisOutput.AddErrorMessage("Found unsupported SDK in project: " + project.Name + " sdk: " + pubProject.SDK ?? "null");
                     }
                 }
 
@@ -279,8 +288,7 @@ namespace DotNETDepends
                 }
                 else
                 {
-                    //TODO: Log this in the output
-                    Console.WriteLine("Compilation was null for " + project.FilePath);
+                    analysisOutput.AddErrorMessage("Compilation was null for " + project.FilePath);
                 }
 
             }

@@ -1,4 +1,7 @@
 ﻿
+using DotNETDepends.Output;
+using System.Text.Json;
+
 namespace DotNETDepends;
 class Program
 {
@@ -11,10 +14,21 @@ class Program
     {
         if (args.Length == 1 && File.Exists(args[0]))
         {
-            var reader = new SolutionReader();
-            await reader.ReadSolutionAsync(args[0]).ConfigureAwait(false);
-            //Set this to indicate success
-            Environment.ExitCode = 0;
+            AnalysisOutput output = new();
+            try
+            {
+                var reader = new SolutionReader();
+                await reader.ReadSolutionAsync(args[0], output).ConfigureAwait(false);
+                //Set this to indicate success
+                Environment.ExitCode = 0;
+            }catch(Exception ex)
+            {
+                output.AddErrorMessage(ex.ToString());
+            }
+            Console.WriteLine("__codesee.output.begin__");
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string jsonString = JsonSerializer.Serialize(output, options);
+            Console.WriteLine(jsonString);
         }
         else
         {

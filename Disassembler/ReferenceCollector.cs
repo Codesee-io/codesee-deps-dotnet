@@ -16,11 +16,12 @@ namespace Disassembler
     internal class ReferenceCollector
     {
         private readonly SourceType sourceType;
+        private readonly IErrorReporter errorReporter;
 
-
-        public ReferenceCollector(SourceType type)
+        public ReferenceCollector(SourceType type, IErrorReporter errorReporter)
         {
             sourceType = type;
+            this.errorReporter = errorReporter;
         }
 
         /**
@@ -32,7 +33,7 @@ namespace Disassembler
             byte[]? il = body.GetILAsByteArray();
             if (il != null)
             {
-                OpCodeReader reader = new(method, il, module, this);
+                OpCodeReader reader = new(method, il, module, this, errorReporter);
                 reader.Read();
             }
         }
@@ -215,12 +216,5 @@ namespace Disassembler
 
         }
 
-        public void PrintReferences()
-        {
-            foreach (var type in sourceType.TypeReferences)
-            {
-                Console.WriteLine(type.ToString());
-            }
-        }
     }
 }

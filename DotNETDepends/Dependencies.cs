@@ -1,4 +1,5 @@
 ﻿using Disassembler;
+using DotNETDepends.Output;
 using Microsoft.CodeAnalysis;
 
 namespace DotNETDepends
@@ -106,6 +107,25 @@ namespace DotNETDepends
                 }
             }
             return result;
+        }
+
+        public void GetLinks(AnalysisOutput output)
+        {
+            foreach (var entry in entries.Values)
+            {
+                foreach (var dep in entry.Dependencies)
+                {
+                    output.AddLink(new Link(entry.FilePath, dep));
+                }
+            }
+
+            foreach (var srcType in sourceTypes)
+            {
+                foreach (var dep in srcType.Dependencies)
+                {
+                    output.AddLink(new Link(srcType.Path, dep));
+                }
+            }
         }
 
         public void Print()

@@ -10,12 +10,13 @@ namespace Disassembler
     {
         private readonly string path;
         private readonly SourceTypeLocator locator;
+        private readonly IErrorReporter errorReporter;
 
-
-        public AssemblyReader(string assemblyPath, SourceTypeLocator locator)
+        public AssemblyReader(string assemblyPath, SourceTypeLocator locator, IErrorReporter errorReporter)
         {
             path = assemblyPath;
             this.locator = locator;
+            this.errorReporter = errorReporter;
         }
         /**
          * Loads an assembly and the:
@@ -50,18 +51,18 @@ namespace Disassembler
                     //well as the IL code for method body references.
                     if (sourceType.AssemblyType != null)
                     {
-                        ReferenceCollector refCollector = new(sourceType);
+                        ReferenceCollector refCollector = new(sourceType, errorReporter);
                         refCollector.CollectReferences();
-                        refCollector.PrintReferences();
                     }
                     else
                     {
-                        Console.WriteLine("Unresolved file: " + sourceType.Path);
+                        errorReporter.AddErrorMessage("Unresolved file: " + sourceType.Path);
                     }
                 }
 
                 return true;
             }
+            errorReporter.AddErrorMessage("Assembly failed to load: " + path);
             return false;
         }
 
