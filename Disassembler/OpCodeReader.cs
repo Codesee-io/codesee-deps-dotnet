@@ -12,6 +12,8 @@ namespace Disassembler
          * The OpCodes class in System.Reflection.Emit has fields for all of the
          * OpCodes.  Statically initialize a list of single byte and 2 byte
          * codes for later lookup.
+         * We do this so that when we read the op codes, we have a linear lookup
+         * based on only one byte of the opcode regardless of whether it is multibyte.
          */
         static OpCodeReader() { 
             singleByteOpCodes= new OpCode[256];

@@ -19,6 +19,9 @@ namespace Disassembler
     /**
      * This class reads ".compiled" files that are generated with aspnet_compile.exe.
      * We don't use this right now, but if we support old ASP.NET on Windows we will.
+     * ".compiled" files are small XML files that map source files to the generated
+     * assembly.  When aspnet_compile builds, the assembly names are pseudo-random,
+     * so we need the to map the sources to output assembly.
      */
     public class CompiledFileLocator
     {
