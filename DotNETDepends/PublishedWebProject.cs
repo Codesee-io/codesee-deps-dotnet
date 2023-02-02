@@ -15,7 +15,6 @@ namespace DotNETDepends
         private readonly Project project;
         private string? assemblyName;
         private string? rootNamespace;
-        public string? SDK { get { return sdk; } }
         private string? sdk;
         public string? SDK { get { return sdk; } }
 

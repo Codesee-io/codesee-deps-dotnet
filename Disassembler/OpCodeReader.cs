@@ -51,7 +51,7 @@ namespace Disassembler
         private readonly HashSet<int> knownMethods = new();
         private readonly HashSet<int> knownTypes = new();
         private readonly HashSet<int> knownFields = new();
-        private readonly IErrorReporter errorReporter;
+
         /**
          * The OpCodeReader processes the ilCode for any references.  Those references are pushed in to the
          * ReferenceCollector while processing.  Call Read() to process the IL code.
