@@ -53,7 +53,6 @@ namespace Disassembler
                     {
                         ReferenceCollector refCollector = new(sourceType, errorReporter);
                         refCollector.CollectReferences();
-                        refCollector.PrintReferences();
                     }
                     else
                     {
@@ -63,6 +62,7 @@ namespace Disassembler
 
                 return true;
             }
+            errorReporter.AddErrorMessage("Assembly failed to load: " + path);
             return false;
         }
 

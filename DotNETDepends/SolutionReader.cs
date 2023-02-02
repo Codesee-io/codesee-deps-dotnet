@@ -52,6 +52,7 @@ namespace DotNETDepends
         private const string PUBLISH_CONFIG = "Release";
         private bool isPublished = false;
         private readonly Dependencies dependencies = new();
+
         public SolutionReader()
         {
 
@@ -181,7 +182,7 @@ namespace DotNETDepends
                         return true;
                     }
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     analysisOutput.AddErrorMessage("Exception: " + ex.ToString());
                 }

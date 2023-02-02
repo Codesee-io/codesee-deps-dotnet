@@ -15,11 +15,12 @@ namespace Disassembler
          * We do this so that when we read the op codes, we have a linear lookup
          * based on only one byte of the opcode regardless of whether it is multibyte.
          */
-        static OpCodeReader() { 
-            singleByteOpCodes= new OpCode[256];
-            twoByteOpCodes= new OpCode[256];
+        static OpCodeReader()
+        {
+            singleByteOpCodes = new OpCode[256];
+            twoByteOpCodes = new OpCode[256];
             var allCodes = typeof(OpCodes).GetFields();
-            foreach(var code in allCodes)
+            foreach (var code in allCodes)
             {
                 OpCode? opCode = (OpCode?)code.GetValue(null);
                 if (opCode != null)
@@ -44,6 +45,7 @@ namespace Disassembler
         private readonly Module module;
         private readonly ReferenceCollector collector;
         private readonly MethodBase method;
+        private readonly IErrorReporter errorReporter;
 
         //Filters so that we only process a token once
         private readonly HashSet<int> knownMethods = new();
@@ -69,7 +71,7 @@ namespace Disassembler
         public void Read()
         {
             ilOffset = 0;
-            while(ilOffset < ilCode.Length)
+            while (ilOffset < ilCode.Length)
             {
                 OpCode op = NextOpCode();
                 ProcessOperand(op);
@@ -82,7 +84,7 @@ namespace Disassembler
         private OpCode NextOpCode()
         {
             var lowByte = ilCode[ilOffset++];
-            if(lowByte != 0xfe)
+            if (lowByte != 0xfe)
             {
                 return singleByteOpCodes[lowByte];
             }
@@ -91,14 +93,14 @@ namespace Disassembler
                 var highByte = ilCode[ilOffset++];
                 return twoByteOpCodes[highByte];
             }
-            
+
         }
 
         private int ReadInt32()
         {
             return ((ilCode[ilOffset++] | (ilCode[ilOffset++] << 8)) | (ilCode[ilOffset++] << 16)) | (ilCode[ilOffset++] << 24);
         }
-    
+
         private void Skip16()
         {
             ilOffset += 2;
@@ -109,7 +111,7 @@ namespace Disassembler
             ilOffset += 4;
         }
 
-        private void Skip64() 
+        private void Skip64()
         {
             ilOffset += 8;
         }
@@ -231,7 +233,9 @@ namespace Disassembler
                         try
                         {
                             resolvedMethod = module.ResolveMethod(methodToken, method.DeclaringType.GetGenericArguments(), method.GetGenericArguments());
-                        }catch(Exception) {
+                        }
+                        catch (Exception)
+                        {
                             //Some compiler generated methods throw when you call GetGenericArguments.
                             //If that happen, we don't have generic arguments, so resolve it with only the
                             //method's type's generic arguments
@@ -243,9 +247,9 @@ namespace Disassembler
                         resolvedMethod = module.ResolveMethod(methodToken, method.DeclaringType.GetGenericArguments(), Array.Empty<Type>());
                     }
                 }
-                if(resolvedMethod != null)
+                if (resolvedMethod != null)
                 {
-                    foreach(var parameter in resolvedMethod.GetParameters())
+                    foreach (var parameter in resolvedMethod.GetParameters())
                     {
                         collector.ReferenceTypeAndArgs(parameter.ParameterType);
                     }
@@ -253,7 +257,7 @@ namespace Disassembler
                     {
                         collector.ReferenceTypeAndArgs(resolvedMethod.DeclaringType);
                     }
-                    
+
                 }
             }
             catch (Exception ex)
@@ -288,7 +292,7 @@ namespace Disassembler
                     Skip32();
                     break;
                 case OperandType.InlineI:
-                    Skip32(); 
+                    Skip32();
                     break;
                 case OperandType.InlineI8:
                     Skip64();
@@ -311,7 +315,7 @@ namespace Disassembler
                     int count = ReadInt32();
                     for (int i = 0; i < count; i++)
                     {
-                        Skip32();   
+                        Skip32();
                     }
                     break;
                 case OperandType.InlineTok:

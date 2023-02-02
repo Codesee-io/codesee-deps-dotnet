@@ -13,6 +13,7 @@ namespace DotNETDepends.Output
         public string From { get; set; }
         public string To { get; set; }
     }
+
     public class AnalysisOutput : IErrorReporter
     {
         public Link[] Links { get { return _links.ToArray(); } }

@@ -15,8 +15,8 @@ namespace DotNETDepends
         private readonly Project project;
         private string? assemblyName;
         private string? rootNamespace;
+        public string? SDK { get { return sdk; } }
         private string? sdk;
-
         public string? SDK { get { return sdk; } }
 
         public PublishedWebProject(Project project, string runtime, string config, IErrorReporter errorReporter)
@@ -171,6 +171,10 @@ namespace DotNETDepends
                     return true;
                 }
                 
+            }
+            else
+            {
+                errorReporter.AddErrorMessage("Unable to locate assembly for project: " + project.Name);
             }
             //return an empty list of types
             errorReporter.AddErrorMessage("Unable to locate assembly.");

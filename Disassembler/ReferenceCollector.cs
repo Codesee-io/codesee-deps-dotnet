@@ -216,12 +216,5 @@ namespace Disassembler
 
         }
 
-        public void PrintReferences()
-        {
-            foreach (var type in sourceType.TypeReferences)
-            {
-                Console.WriteLine(type.ToString());
-            }
-        }
     }
 }
