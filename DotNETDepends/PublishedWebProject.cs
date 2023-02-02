@@ -16,12 +16,15 @@ namespace DotNETDepends
         private string? assemblyName;
         private string? rootNamespace;
         private string? sdk;
-        public PublishedWebProject(Project project, string runtime, string config)
+
+        public string? SDK { get { return sdk; } }
+
+        public PublishedWebProject(Project project, string runtime, string config, IErrorReporter errorReporter)
         {
             this.runtime = runtime;
             this.config = config;
             this.project = project;
-            ReadProjectFile();
+            ReadProjectFile(errorReporter);
         }
 
         private static void AddFilesToList(List<string> paths, FileInfo[] files)
@@ -49,7 +52,7 @@ namespace DotNETDepends
          * Reads the project file (an xml document) and extracts the Sdk, AssemblyName and 
          * RootNamespace.  We need all 3 to map assembly classes to web source files
          */
-        private void ReadProjectFile()
+        private void ReadProjectFile(IErrorReporter errorReporter)
         {
             if (project.FilePath != null)
             {
@@ -91,8 +94,7 @@ namespace DotNETDepends
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine(ex.ToString());
-
+                    errorReporter.AddErrorMessage(ex.ToString());
                 }
             }
         }
@@ -146,7 +148,7 @@ namespace DotNETDepends
          * 3.  Disassembles the types from the located assembly for type definition and
          *     references.
          */
-        public bool Analyze(out List<SourceType> foundTypes)
+        public bool Analyze(out HashSet<SourceType> foundTypes, IErrorReporter errorReporter)
         {
             var assemblyPath = FindAssembly();
             string? solutionDir = Path.GetDirectoryName(project.Solution.FilePath);
@@ -163,7 +165,7 @@ namespace DotNETDepends
                     {
                         locator.AddSource(source, projectDir, solutionDir, rootNamespace ?? "");
                     }
-                    var reader = new AssemblyReader(assemblyPath, locator);
+                    var reader = new AssemblyReader(assemblyPath, locator, errorReporter);
                     reader.Read();
                     foundTypes = reader.GetReadTypes();
                     return true;
@@ -171,6 +173,7 @@ namespace DotNETDepends
                 
             }
             //return an empty list of types
+            errorReporter.AddErrorMessage("Unable to locate assembly.");
             foundTypes = new();
             return false;
         }

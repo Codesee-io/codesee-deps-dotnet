@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNETDepends", "DotNETDepe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disassembler", "Disassembler\Disassembler.csproj", "{E7BD41CD-B8CA-4071-AA13-43468431B59B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDisassembler", "TestDisassembler\TestDisassembler.csproj", "{6D3DAC4D-DED0-46CF-9C50-0DF19541B9C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDependencyReading", "TestDependencyReading\TestDependencyReading.csproj", "{5E3179D7-7319-45AF-93C3-688605D16045}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{E7BD41CD-B8CA-4071-AA13-43468431B59B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7BD41CD-B8CA-4071-AA13-43468431B59B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7BD41CD-B8CA-4071-AA13-43468431B59B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6D3DAC4D-DED0-46CF-9C50-0DF19541B9C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6D3DAC4D-DED0-46CF-9C50-0DF19541B9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6D3DAC4D-DED0-46CF-9C50-0DF19541B9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6D3DAC4D-DED0-46CF-9C50-0DF19541B9C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E3179D7-7319-45AF-93C3-688605D16045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E3179D7-7319-45AF-93C3-688605D16045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E3179D7-7319-45AF-93C3-688605D16045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E3179D7-7319-45AF-93C3-688605D16045}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

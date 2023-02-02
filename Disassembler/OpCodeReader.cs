@@ -49,17 +49,18 @@ namespace Disassembler
         private readonly HashSet<int> knownMethods = new();
         private readonly HashSet<int> knownTypes = new();
         private readonly HashSet<int> knownFields = new();
-
+        private readonly IErrorReporter errorReporter;
         /**
          * The OpCodeReader processes the ilCode for any references.  Those references are pushed in to the
          * ReferenceCollector while processing.  Call Read() to process the IL code.
          */
-        public OpCodeReader(MethodBase method, byte[] ilCode, Module module, ReferenceCollector collector)
+        public OpCodeReader(MethodBase method, byte[] ilCode, Module module, ReferenceCollector collector, IErrorReporter errorReporter)
         {
             this.ilCode = ilCode;
             this.module = module;
             this.collector = collector;
             this.method = method;
+            this.errorReporter = errorReporter;
         }
 
         /**
@@ -162,8 +163,7 @@ namespace Disassembler
             }
             catch (Exception ex)
             {
-                //TODO: Log to output object
-                Console.WriteLine(ex.ToString());
+                errorReporter.AddErrorMessage(ex.ToString());
             }
         }
 
@@ -207,9 +207,7 @@ namespace Disassembler
             }
             catch (Exception ex)
             {
-                //TODO: Log to output object
-                Console.WriteLine(method.ToString());
-                Console.WriteLine(ex.ToString());
+                errorReporter.AddErrorMessage(ex.ToString());
             }
         }
 
@@ -260,9 +258,7 @@ namespace Disassembler
             }
             catch (Exception ex)
             {
-                //TODO: Log to output object
-                Console.WriteLine(method.ToString());
-                Console.WriteLine(ex.ToString());
+                errorReporter.AddErrorMessage(ex.ToString());
             }
         }
 

@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup .NET Core SDK 6.x
+      - name: Setup .NET Core SDK 7.x
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.x'
+          dotnet-version: '7.x'
           dotnet-quality: 'ga'
       - name: Build and Publish
-        run: dotnet publish --framework net6.0 --runtime linux-x64 --self-contained false --configuration Release
+        run: dotnet publish --framework net7.0 --runtime linux-x64 --self-contained false --configuration Release
       - name: Test run on self
-        run: ./DotNETDepends/bin/Release/net6.0/linux-x64/DotNETDepends ./DotNETDepends.sln
+        run: ./DotNETDepends/bin/Release/net7.0/linux-x64/DotNETDepends ./DotNETDepends.sln
 
