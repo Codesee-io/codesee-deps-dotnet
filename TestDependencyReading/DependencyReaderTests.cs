@@ -1,7 +1,7 @@
 using DotNETDepends;
 using DotNETDepends.Output;
 using Microsoft.Build.Locator;
-using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace TestDependencyReading
 {
@@ -20,9 +20,20 @@ namespace TestDependencyReading
 
         private bool LinkMatches(string from, string to, Link link)
         {
-            return link.To.Equals(to) && link.From.Equals(from);
+            return link.To.Equals(FixPath(to)) && link.From.Equals(FixPath(from));
         }
 
+        string FixPath(string path)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return path.Replace('/', '\\');
+            }
+            else
+            {
+                return path.Replace('\\', '/');
+            }
+        }
         [TestInitialize]
         public void Initialize()
         {
@@ -45,11 +56,11 @@ namespace TestDependencyReading
             Assert.AreEqual(2, output.Links.Length);
             AssertLinks(new Dictionary<string, string>
             {
-                { "NetCoreMVC\\Controllers\\HomeController.cs",
-                  "NetCoreMVC\\Models\\ErrorViewModel.cs"
+                { FixPath("NetCoreMVC\\Controllers\\HomeController.cs"),
+                  FixPath("NetCoreMVC\\Models\\ErrorViewModel.cs")
                 },
-                { "NetCoreMVC\\Views\\Shared\\Error.cshtml",
-                  "NetCoreMVC\\Models\\ErrorViewModel.cs"
+                { FixPath("NetCoreMVC\\Views\\Shared\\Error.cshtml"),
+                  FixPath("NetCoreMVC\\Models\\ErrorViewModel.cs")
                 }
             }, output.Links);
 
@@ -63,22 +74,22 @@ namespace TestDependencyReading
             await reader.ReadSolutionAsync(slnFile, output).ConfigureAwait(false);
             Assert.IsNotNull(output);
             Assert.AreEqual(3, output.Links.Length);
-            Assert.AreEqual(output.Links[0].From, "WinFormsApp1\\Form1.vb");
-            Assert.AreEqual(output.Links[0].To, "WinFormsApp1\\DoSomething.vb");
 
             int matches = 0;
-            foreach(var link in output.Links) {
-                if(LinkMatches("WinFormsApp1\\Form1.vb", "WinFormsApp1\\DoSomething.vb", link)){
+            foreach (var link in output.Links)
+            {
+                if (LinkMatches("WinFormsApp1\\Form1.vb", "WinFormsApp1\\DoSomething.vb", link))
+                {
                     matches++;
                     continue;
                 }
-                if(LinkMatches("WinFormsApp1\\My Project\\Application.Designer.vb",
+                if (LinkMatches("WinFormsApp1\\My Project\\Application.Designer.vb",
                 "WinFormsApp1\\Form1.Designer.vb", link))
                 {
                     matches++;
                     continue;
                 }
-                if(LinkMatches("WinFormsApp1\\My Project\\Application.Designer.vb",
+                if (LinkMatches("WinFormsApp1\\My Project\\Application.Designer.vb",
                 "WinFormsApp1\\Form1.vb", link))
                 {
                     matches++;

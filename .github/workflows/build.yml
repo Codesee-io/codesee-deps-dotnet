@@ -16,4 +16,7 @@ jobs:
         run: dotnet publish --framework net7.0 --runtime linux-x64 --self-contained false --configuration Release
       - name: Test run on self
         run: ./DotNETDepends/bin/Release/net7.0/linux-x64/DotNETDepends ./DotNETDepends.sln
-
+      - name: Copy Test Fixtures
+        run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/net7.0/linux-x64/Fixtures -r
+      - name: Run Test
+        run: dotnet test
