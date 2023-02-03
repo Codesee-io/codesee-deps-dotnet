@@ -16,8 +16,6 @@ jobs:
         with:
           dotnet-version: ${{ env.NET_ACTION_VERSION }}
           dotnet-quality: 'ga'
-      - name: Clean
-        run: dotnet clean
       - name: Publish
         run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release
       - name: Run Tests
