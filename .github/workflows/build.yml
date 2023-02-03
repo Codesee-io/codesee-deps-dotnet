@@ -14,5 +14,11 @@ jobs:
           dotnet-quality: 'ga'
       - name: Publish
         run: dotnet publish --framework net6.0 --runtime linux-x64 --self-contained true --configuration Release
+      - name: Test run on self
+        run: ./DotNETDepends/bin/Release/net7.0/linux-x64/DotNETDepends ./DotNETDepends.sln
+      - name: Copy Test Fixtures
+        run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/net7.0/linux-x64/Fixtures -rf -v
+      - name: Run Test
+        run: dotnet test
 
 
