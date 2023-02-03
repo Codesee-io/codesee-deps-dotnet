@@ -17,7 +17,7 @@ jobs:
           dotnet-version: ${{ env.NET_ACTION_VERSION }}
           dotnet-quality: 'ga'
       - name: Publish
-        run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release
+        run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release -o output
       - name: Run Tests
-        run: dotnet test
+        run: dotnet test ./output/TestDependencyReading.dll
 
