@@ -15,9 +15,9 @@ jobs:
       - name: Publish
         run: dotnet publish --framework net6.0 --runtime linux-x64 --self-contained false --configuration Release
       - name: Test run on self
-        run: ./codesee-deps-dotnet/DotNETDepends/bin/Release/net7.0/linux-x64/DotNETDepends ./codesee-deps-dotnet/DotNETDepends.sln
+        run: ./DotNETDepends/bin/Release/net6.0/linux-x64/DotNETDepends ./DotNETDepends.sln
       - name: Copy Test Fixtures
-        run: cp ./codesee-deps-dotnet/TestDependencyReading/Fixtures/ ./codesee-deps-dotnet/TestDependencyReading/bin/Release/net7.0/linux-x64/Fixtures -rf -v
+        run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/net6.0/linux-x64/Fixtures -rf -v
       - name: Run Test
         run: dotnet test
 
