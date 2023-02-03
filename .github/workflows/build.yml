@@ -3,8 +3,8 @@ name: codesee-deps-dotnet package
 on: [push]
 
 env:
-  NET_VERSION: net6.0
-  NET_ACTION_VERSION: '6.x'
+  NET_VERSION: net7.0
+  NET_ACTION_VERSION: '7.x'
 
 jobs:
   build:
@@ -20,6 +20,6 @@ jobs:
         run: dotnet clean
       - name: Publish
         run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release
-      - name: Run Test
+      - name: Run Tests
         run: dotnet test
 
