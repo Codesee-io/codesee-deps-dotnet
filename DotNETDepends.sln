@@ -5,9 +5,9 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNETDepends", "DotNETDepends\DotNETDepends.csproj", "{B5CA530F-BF09-4555-AA8D-B6565FBEDE1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disassembler", "Disassembler\Disassembler.csproj", "{E7BD41CD-B8CA-4071-AA13-43468431B59B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Disassembler", "Disassembler\Disassembler.csproj", "{E7BD41CD-B8CA-4071-AA13-43468431B59B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDependencyReading", "TestDependencyReading\TestDependencyReading.csproj", "{5E3179D7-7319-45AF-93C3-688605D16045}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDependencyReading", "TestDependencyReading\TestDependencyReading.csproj", "{5E3179D7-7319-45AF-93C3-688605D16045}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
