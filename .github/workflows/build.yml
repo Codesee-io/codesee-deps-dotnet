@@ -2,22 +2,34 @@ name: codesee-deps-dotnet package
 
 on: [push]
 
+env:
+  NET_VERSION: net6.0
+  NET_ACTION_VERSION: 6.x
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup .NET Core SDK 6.x
+      - name: Setup .NET Core SDK ${{ env.NET_ACTION_VERSION }}
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.x'
+          dotnet-version: '$${{ env.NET_ACTION_VERSION }}'
           dotnet-quality: 'ga'
       - name: Publish
-        run: dotnet publish --framework net6.0 --runtime linux-x64 --self-contained false --configuration Release
+        run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release
+  selfTest:
+    runs-on: ubuntu-latest
+    uses: build
+    steps:
       - name: Test run on self
-        run: ./DotNETDepends/bin/Release/net6.0/linux-x64/DotNETDepends ./DotNETDepends.sln
+        run: ./DotNETDepends/bin/Release/${{ env.NET_VERSION }}/linux-x64/DotNETDepends ./DotNETDepends.sln
+  unitTests:
+    runs-on: ubuntu-latest
+    uses: build
+    steps:
       - name: Copy Test Fixtures
-        run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/net6.0/linux-x64/Fixtures -rf -v
+        run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/${{ env.NET_VERSION }}/linux-x64/Fixtures -rf -v
       - name: Run Test
         run: dotnet test
 
