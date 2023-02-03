@@ -20,6 +20,7 @@ jobs:
         run: dotnet restore
       - name: Stop Servers
         run: dotnet build-server shutdown
+      - name: Publish
         run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release --no-dependencies -o output
       - name: Run Tests
         run: dotnet test ./output/TestDependencyReading.dll
