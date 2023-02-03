@@ -10,7 +10,11 @@ namespace TestDependencyReading
     {
         public static string? GetFixturesPath()
         {
-            return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Fixtures");
+            string workingDir =  Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+            while(workingDir != null && !workingDir.EndsWith("TestDependencyReading")) {
+                workingDir= Path.GetDirectoryName(workingDir);
+            }
+            return Path.Combine(workingDir, "Fixtures");
         }
     }
 }

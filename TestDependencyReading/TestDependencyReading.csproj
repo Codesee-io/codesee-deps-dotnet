@@ -56,8 +56,4 @@
     <Folder Include="Fixtures\" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">
-    <Exec Command="xcopy $(ProjectDir)Fixtures\* .\$(OutDir)Fixtures /s /i /y" />
-  </Target>
-
 </Project>
