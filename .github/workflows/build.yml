@@ -27,9 +27,11 @@ jobs:
         with:
           dotnet-version: ${{ env.NET_ACTION_VERSION }}
           dotnet-quality: 'ga'
-      - name: Copy Test Fixtures
+      - name: Get pwd 
         run: pwd
+      - name: ls 
         run: ls -al
+      - name: Copy Test Fixtures
         run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/${{ env.NET_VERSION }}/linux-x64/Fixtures -rf -v
       - name: Run Test
         run: dotnet test
