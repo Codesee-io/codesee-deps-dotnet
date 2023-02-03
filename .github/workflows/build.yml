@@ -20,13 +20,11 @@ jobs:
         run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release
   selfTest:
     runs-on: ubuntu-latest
-    uses: build
     steps:
       - name: Test run on self
         run: ./DotNETDepends/bin/Release/${{ env.NET_VERSION }}/linux-x64/DotNETDepends ./DotNETDepends.sln
   unitTests:
     runs-on: ubuntu-latest
-    uses: build
     steps:
       - name: Copy Test Fixtures
         run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/${{ env.NET_VERSION }}/linux-x64/Fixtures -rf -v
