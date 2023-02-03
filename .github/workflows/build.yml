@@ -8,7 +8,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET Core SDK ${{ env.NET_ACTION_VERSION }}
@@ -20,8 +20,6 @@ jobs:
         run: dotnet clean
       - name: Publish
         run: dotnet publish --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release
-      - name: Copy Test Fixtures
-        run: cp ./TestDependencyReading/Fixtures/ ./TestDependencyReading/bin/Release/${{ env.NET_VERSION }}/linux-x64/Fixtures -rf -v
       - name: Run Test
         run: dotnet test
 
