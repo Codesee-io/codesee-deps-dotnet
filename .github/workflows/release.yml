@@ -1,8 +1,9 @@
 name: codesee-deps-dotnet release
 
-on: push
-  tags:
-    - 'v*'
+on: 
+  push:
+    tags:
+      - 'v*'
 env:
   NET_VERSION: net7.0
   NET_ACTION_VERSION: '7.x'
