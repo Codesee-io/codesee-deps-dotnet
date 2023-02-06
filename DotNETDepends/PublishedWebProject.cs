@@ -15,8 +15,9 @@ namespace DotNETDepends
         private readonly Project project;
         private string? assemblyName;
         private string? rootNamespace;
-        public string? SDK { get { return sdk; } }
         private string? sdk;
+        public string? SDK { get { return sdk; } }
+
         public PublishedWebProject(Project project, string runtime, string config, IErrorReporter errorReporter)
         {
             this.runtime = runtime;
@@ -93,7 +94,6 @@ namespace DotNETDepends
                 catch (Exception ex)
                 {
                     errorReporter.AddErrorMessage(ex.ToString());
-
                 }
             }
         }
@@ -147,7 +147,7 @@ namespace DotNETDepends
          * 3.  Disassembles the types from the located assembly for type definition and
          *     references.
          */
-        public bool Analyze(out List<SourceType> foundTypes, IErrorReporter errorReporter)
+        public bool Analyze(out HashSet<SourceType> foundTypes, IErrorReporter errorReporter)
         {
             var assemblyPath = FindAssembly();
             string? solutionDir = Path.GetDirectoryName(project.Solution.FilePath);
@@ -176,6 +176,7 @@ namespace DotNETDepends
                 errorReporter.AddErrorMessage("Unable to locate assembly for project: " + project.Name);
             }
             //return an empty list of types
+            errorReporter.AddErrorMessage("Unable to locate assembly.");
             foundTypes = new();
             return false;
         }

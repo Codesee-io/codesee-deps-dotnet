@@ -131,8 +131,6 @@ namespace DotNETDepends
             var typeName = Path.GetFileNameWithoutExtension(filePath);
             return new SourceType(typeName, Path.GetRelativePath(solutionDir, filePath), ns);
         }
-
-
     }
 
     /*
@@ -152,7 +150,7 @@ namespace DotNETDepends
             }
             ns ??= "";
             var typeName = GetTypeName(filePath, projectDir);
-            return new SourceType(typeName, Path.GetRelativePath(solutionDir, filePath), ns);
+            return new SourceType(typeName, Path.GetRelativePath(solutionDir, filePath), ns, "AspNetCoreGeneratedDocument");
         }
 
         /*

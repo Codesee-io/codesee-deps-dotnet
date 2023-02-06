@@ -70,7 +70,7 @@ namespace Disassembler
          * Returns the SourceTypes found during Read().
          * It will be empty if called before Read().
          */
-        public List<SourceType> GetReadTypes()
+        public HashSet<SourceType> GetReadTypes()
         {
             return locator.SourceTypes;
         }

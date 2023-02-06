@@ -12,6 +12,9 @@ namespace Disassembler
      */
     public class SourceType
     {
+        //AspNetCore will generate in an "AspNetCoreGeneratedDocuments" namespace sometimes
+        //We use the alsias to determine if this type may be in 1 of 2 location.
+        public string? NamespaceAlias;
         //Type name
         public readonly string Name;
         //Solution relative file path
@@ -25,10 +28,11 @@ namespace Disassembler
         //The type we mapped the source to in the compiled assembly
         public Type? AssemblyType { get; set; }
 
-        public SourceType(string name, string path, string ns) { 
+        public SourceType(string name, string path, string ns, string? nsAlias = null) { 
             Name = name;
             Path = path;
             Namespace = ns;
+            NamespaceAlias = nsAlias;
         }
     }
 }

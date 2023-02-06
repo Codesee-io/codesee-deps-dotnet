@@ -3,7 +3,7 @@ using Disassembler;
 
 namespace DotNETDepends.Output
 {
-    internal class Link
+    public class Link
     {
         public Link(string from, string to)
         {
@@ -13,7 +13,8 @@ namespace DotNETDepends.Output
         public string From { get; set; }
         public string To { get; set; }
     }
-    internal class AnalysisOutput : IErrorReporter
+
+    public class AnalysisOutput : IErrorReporter
     {
         public Link[] Links { get { return _links.ToArray(); } }
         public string[] Errors { get { return _errors.ToArray(); } }

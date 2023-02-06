@@ -1,5 +1,6 @@
 ﻿
 using DotNETDepends.Output;
+using Microsoft.Build.Locator;
 using System.Text.Json;
 
 namespace DotNETDepends;
@@ -17,6 +18,10 @@ class Program
             AnalysisOutput output = new();
             try
             {
+                //This finds the MSBuild libs from the .NET SDK
+                //It can only be called once without throwing
+                MSBuildLocator.RegisterDefaults();
+
                 var reader = new SolutionReader();
                 await reader.ReadSolutionAsync(args[0], output).ConfigureAwait(false);
                 //Set this to indicate success

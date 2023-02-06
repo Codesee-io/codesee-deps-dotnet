@@ -1,5 +1,4 @@
-﻿using Microsoft.Build.Locator;
-using Microsoft.CodeAnalysis.MSBuild;
+﻿using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.FindSymbols;
@@ -48,7 +47,7 @@ namespace DotNETDepends
      * find any references to those symbol both in the solution and in the disassembled ASP.NET
      * classes.
      */
-    class SolutionReader
+    public class SolutionReader
     {
         private const string PUBLISH_CONFIG = "Release";
         private bool isPublished = false;
@@ -56,8 +55,7 @@ namespace DotNETDepends
 
         public SolutionReader()
         {
-            //This finds the MSBuild libs from the .NET SDK
-            MSBuildLocator.RegisterDefaults();
+
         }
 
         /**
@@ -92,7 +90,7 @@ namespace DotNETDepends
                  */
                 foreach (var entry in dependencies.GetFileEntries())
                 {
-                    
+
                     foreach (var symbol in entry.Symbols)
                     {
                         /**
@@ -107,7 +105,7 @@ namespace DotNETDepends
                             {
                                 //CandidateLocations are guesses by Rosalyn.
                                 //Also filter anything we don't have source for
-                                if (!location.IsCandidateLocation && location.Location.IsInSource)
+                                if (location.Location.IsInSource)
                                 {
                                     //Record the reference
                                     var path = location.Location.SourceTree.FilePath;
@@ -120,11 +118,11 @@ namespace DotNETDepends
                          * Now look for references in the ASP.NET file we disassembled.
                          */
                         var consumers = dependencies.FindSourceSymbolReferences(symbol);
-                        foreach(var consumer in consumers)
+                        foreach (var consumer in consumers)
                         {
                             consumer.Dependencies.Add(entry.FilePath);
                         }
-                        
+
                     }
                 }
                 /**
@@ -132,10 +130,10 @@ namespace DotNETDepends
                  * to each other.
                  * These are unlikely, but possible with Blazor components
                  */
-                foreach(var srcType in dependencies.SourceTypes)
+                foreach (var srcType in dependencies.SourceTypes)
                 {
                     var deps = dependencies.FindSourceSymbolReferences(srcType);
-                    foreach(var dep in deps)
+                    foreach (var dep in deps)
                     {
                         dep.Dependencies.Add(srcType.Path);
                     }
@@ -175,6 +173,7 @@ namespace DotNETDepends
                     startInfo.ArgumentList.Add(RuntimeInformation.RuntimeIdentifier);
                     //PublishReadyToRun is required to precompile the ASP and Blazor files
                     startInfo.ArgumentList.Add("-p:PublishReadyToRun=true");
+                    startInfo.ArgumentList.Add("--self-contained");
                     startInfo.ArgumentList.Add(solution.FilePath);
                     var process = Process.Start(startInfo);
                     if (process != null)
@@ -182,7 +181,8 @@ namespace DotNETDepends
                         process.WaitForExit();
                         return true;
                     }
-                }catch(Exception ex)
+                }
+                catch(Exception ex)
                 {
                     analysisOutput.AddErrorMessage("Exception: " + ex.ToString());
                 }
@@ -256,7 +256,7 @@ namespace DotNETDepends
                         //If it is a supported SDK, publish the solution if it hasn't been
                         PublishSolution(solution, analysisOutput);
                         //Read in the corresponding ASP.NET components.
-                        if (pubProject.Analyze(out List<SourceType> foundTypes, analysisOutput))
+                        if (pubProject.Analyze(out HashSet<SourceType> foundTypes, analysisOutput))
                         {
                             dependencies.AddSourceTypes(foundTypes);
                         }

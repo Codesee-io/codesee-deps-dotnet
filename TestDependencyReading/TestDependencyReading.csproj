@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Fixtures\CSharpWinApp\**" />
+    <Compile Remove="Fixtures\NetCoreMVC\**" />
+    <Compile Remove="Fixtures\VBWinApp\**" />
+    <EmbeddedResource Remove="Fixtures\CSharpWinApp\**" />
+    <EmbeddedResource Remove="Fixtures\NetCoreMVC\**" />
+    <EmbeddedResource Remove="Fixtures\VBWinApp\**" />
+    <None Remove="Fixtures\CSharpWinApp\**" />
+    <None Remove="Fixtures\NetCoreMVC\**" />
+    <None Remove="Fixtures\VBWinApp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNETDepends\DotNETDepends.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Fixtures\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+<ItemGroup>
+    <Folder Include="Fixtures\" />
+  </ItemGroup>
+
+</Project>

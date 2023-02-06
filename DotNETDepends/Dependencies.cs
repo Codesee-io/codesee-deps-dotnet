@@ -59,7 +59,7 @@ namespace DotNETDepends
             return entry;
         }
 
-        public void AddSourceTypes(List<SourceType> types)
+        public void AddSourceTypes(HashSet<SourceType> types)
         {
             sourceTypes.AddRange(types);
         }

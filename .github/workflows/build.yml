@@ -2,18 +2,28 @@ name: codesee-deps-dotnet package
 
 on: [push]
 
+env:
+  NET_VERSION: net7.0
+  NET_ACTION_VERSION: '7.x'
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup .NET Core SDK 6.x
+      - name: Setup .NET Core SDK ${{ env.NET_ACTION_VERSION }}
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.x'
+          dotnet-version: ${{ env.NET_ACTION_VERSION }}
           dotnet-quality: 'ga'
-      - name: Build and Publish
-        run: dotnet publish --framework net6.0 --runtime linux-x64 --self-contained false --configuration Release
-      - name: Test run on self
-        run: ./DotNETDepends/bin/Release/net6.0/linux-x64/DotNETDepends ./DotNETDepends.sln
+      - name: Restore
+        run: dotnet restore
+      - name: Stop Servers
+        run: dotnet build-server shutdown
+      - name: Publish
+        run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release --no-dependencies -o output
+      - name: Run Tests
+        run: dotnet test
+      - name: Run Self Test
+        run: ./output/DotNETDepends ./DotNETDepends.sln
 
