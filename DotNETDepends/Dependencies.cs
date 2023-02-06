@@ -38,7 +38,7 @@ namespace DotNETDepends
 
         private List<DependencyEntry> GetEntriesByType(EntryType type)
         {
-            List<DependencyEntry> result = new List<DependencyEntry>();
+            List<DependencyEntry> result = new();
             foreach(var entry in entries.Values)
             {
                 if(entry.Type == type)
@@ -75,7 +75,9 @@ namespace DotNETDepends
             {
                 foreach(var typeRef in type.TypeReferences)
                 {
-                    if (typeRef.Name.Equals(symbol.Name) && typeRef.Namespace.Equals(symbol.ContainingNamespace.ToDisplayString())) 
+                    if (typeRef.Namespace != null &&
+                        typeRef.Name.Equals(symbol.Name) && 
+                        typeRef.Namespace.Equals(symbol.ContainingNamespace.ToDisplayString())) 
                     {
                         result.Add(type);
                         break;

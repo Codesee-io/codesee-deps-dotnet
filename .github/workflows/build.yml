@@ -21,7 +21,7 @@ jobs:
       - name: Stop Servers
         run: dotnet build-server shutdown
       - name: Publish
-        run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release --no-dependencies -o output
+        run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release -o output
       - name: Run Tests
         run: dotnet test
       - name: Run Self Test
