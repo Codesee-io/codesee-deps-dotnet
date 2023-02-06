@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace DotNETDepends
 {
     /**
- * Locate declared types in a Rosalyn syntax tree
+ * Locate declared types in a Roslyn syntax tree
  */
     internal class SymbolDefinitionFinder : SyntaxWalker
     {
@@ -36,13 +36,13 @@ namespace DotNETDepends
 
     }
 
-    internal class RosalynProject
+    internal class RoslynProject
     {
         protected readonly Project project;
         private readonly IErrorReporter errorReporter;
         private readonly Dependencies dependencies;
         private readonly string solutionRoot;
-        public RosalynProject(Project project, Dependencies dependencies, IErrorReporter errorReporter)
+        public RoslynProject(Project project, Dependencies dependencies, IErrorReporter errorReporter)
         {
             this.project = project;
             this.dependencies = dependencies;

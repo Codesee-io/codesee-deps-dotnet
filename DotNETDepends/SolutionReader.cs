@@ -15,7 +15,7 @@ namespace DotNETDepends
      * If it encounters an ASP.NET project, it will call "dotnet publish" on it.
      * That compiles all of the ASP.NET content.  We then map from source to generated class
      * and disassemble those page classes looking for declarations and referenced symbols.
-     * The C# and VB files are parsed with Rosalyn to look for declared symbols only.  We then
+     * The C# and VB files are parsed with Roslyn to look for declared symbols only.  We then
      * find any references to those symbol both in the solution and in the disassembled ASP.NET
      * classes.
      */
@@ -61,7 +61,7 @@ namespace DotNETDepends
             if (solutionRoot != null)
             {
                 /**
-                 * These entries come from Rosalyn.  They are the declared types in
+                 * These entries come from Roslyn.  They are the declared types in
                  * each file we walked.
                  */
                 foreach (var entry in dependencies.GetFileEntries())
@@ -79,7 +79,7 @@ namespace DotNETDepends
                         {
                             foreach (var location in reference.Locations)
                             {
-                                //CandidateLocations are guesses by Rosalyn.
+                                //CandidateLocations are guesses by Roslyn.
                                 //Also filter anything we don't have source for
                                 if (location.Location.IsInSource)
                                 {
@@ -119,7 +119,7 @@ namespace DotNETDepends
 
         /**
          * Runs dotnet restore on the solution.  This fetches any nuget dependencies
-         * so that when we compile with Rosalyn or decompile the assembly they are available.
+         * so that when we compile with Roslyn or decompile the assembly they are available.
          */
         private bool RestoreSolution(Solution solution, AnalysisOutput analysisOutput)
         {
@@ -236,7 +236,7 @@ namespace DotNETDepends
          * and if found publishes the solution if it hasn't been.
          * If the project is contains web files it uses the published assemblies to reflect the
          * dependencies and disassembles the generated ASP/Razor pages/components.
-         * It then uses Rosalyn to parse the references of any C# or VB files, regardless of
+         * It then uses Roslyn to parse the references of any C# or VB files, regardless of
          * whether or not it is an ASP.NET project.
          */
         private async Task ProcessProjectAsync(ProjectId projectId, Solution solution, ProjectDependencyGraph depGraph, AnalysisOutput analysisOutput)
@@ -278,14 +278,14 @@ namespace DotNETDepends
                     else
                     {
                         analysisOutput.AddErrorMessage("Found unsupported SDK in project: " + project.Name + " sdk: " + pubProject.SDK ?? "null");
-                        //Just do the Rosalyn analysis
+                        //Just do the Roslyn analysis
                         await pubProject.Analyze();
                     }
                 }
                 else
                 {
-                    RosalynProject rosalynProject = new RosalynProject(project, dependencies, analysisOutput);
-                    await rosalynProject.Analyze();
+                    var roslynProject = new RoslynProject(project, dependencies, analysisOutput);
+                    await roslynProject.Analyze();
 
                 }
             }

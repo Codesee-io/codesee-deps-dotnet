@@ -9,7 +9,7 @@ namespace DotNETDepends
      * This class represents an ASP.NET Core or Blazor web project that has
      * had it's solution published.
      */
-    internal class PublishedWebProject : RosalynProject
+    internal class PublishedWebProject : RoslynProject
     {
         private readonly string runtime;
         private readonly string config;
