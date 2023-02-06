@@ -9,7 +9,7 @@ class Program
 {
     static bool ValidateFileNameInput(string fileName)
     {
-        return File.Exists(fileName);
+        return (File.Exists(fileName) && fileName.EndsWith("sln"));
     }
     /**
      * Entry point.  Just takes a solution file as arg[0]
