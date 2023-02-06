@@ -138,7 +138,7 @@ namespace DotNETDepends
                     //This is needed for windows projects on linux
                     startInfo.ArgumentList.Add("/p:EnableWindowsTargeting=true");
                     startInfo.ArgumentList.Add(solution.FilePath);
-
+                    startInfo.UseShellExecute = false;
                     var process = Process.Start(startInfo);
                     if (process != null)
                     {
@@ -188,6 +188,7 @@ namespace DotNETDepends
                     startInfo.ArgumentList.Add("-p:PublishReadyToRun=true");
                     startInfo.ArgumentList.Add("--self-contained");
                     startInfo.ArgumentList.Add(solution.FilePath);
+                    startInfo.UseShellExecute = false;
                     var process = Process.Start(startInfo);
                     if (process != null)
                     {
