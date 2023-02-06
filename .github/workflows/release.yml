@@ -1,4 +1,4 @@
-name: codesee-deps-dotnet release
+name: Release
 
 on: 
   push:

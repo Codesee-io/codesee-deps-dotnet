@@ -1,4 +1,4 @@
-name: codesee-deps-dotnet package
+name: Build and Test
 
 on: [push]
 
