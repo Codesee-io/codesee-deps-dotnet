@@ -1,6 +1,6 @@
 name: codesee-deps-dotnet release
 
-on: [push]
+on: push
   tags:
     - 'v*'
 env:
