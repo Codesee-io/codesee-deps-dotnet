@@ -2,10 +2,15 @@
 using DotNETDepends.Output;
 using Microsoft.Build.Locator;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace DotNETDepends;
 class Program
 {
+    static bool ValidateFileNameInput(string fileName)
+    {
+        return (File.Exists(fileName) && fileName.EndsWith("sln"));
+    }
     /**
      * Entry point.  Just takes a solution file as arg[0]
      * See the documentation on SolutionReader for an 
@@ -15,6 +20,10 @@ class Program
     {
         if (args.Length == 1 && File.Exists(args[0]))
         {
+            if (!ValidateFileNameInput(args[0]))
+            {
+                throw new Exception("Invalid command line argument.");
+            }
             AnalysisOutput output = new();
             try
             {
@@ -42,5 +51,10 @@ class Program
             Environment.Exit(1);
         }
 
+    }
+
+    private static bool validateFileNameInput(string v)
+    {
+        throw new NotImplementedException();
     }
 }

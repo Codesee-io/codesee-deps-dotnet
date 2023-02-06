@@ -10,40 +10,12 @@ using DotNETDepends.Output;
 namespace DotNETDepends
 {
     /**
-     * Locate declared types in a Rosalyn syntax tree
-     */
-    class SymbolDefinitionFinder : SyntaxWalker
-    {
-        private readonly DependencyEntry entry;
-        public SymbolDefinitionFinder(DependencyEntry entry) : base(SyntaxWalkerDepth.Node)
-        {
-            this.entry = entry;
-        }
-
-        public override void Visit(SyntaxNode? node)
-        {
-            if (node != null)
-            {
-                var symbol = entry.Semantic?.GetDeclaredSymbol(node);
-                //Look for NamedTypes.  These are classes.
-                if (symbol != null && symbol.Kind == SymbolKind.NamedType)
-                {
-                    entry.Symbols.Add(symbol);
-                }
-                //We can optimize this in the future to not descend in to uninteresting nodes
-                base.Visit(node);
-            }
-        }
-
-    }
-
-    /**
      * General overview:
      * This class takes a solution and processes each project in it in dependency order.
      * If it encounters an ASP.NET project, it will call "dotnet publish" on it.
      * That compiles all of the ASP.NET content.  We then map from source to generated class
      * and disassemble those page classes looking for declarations and referenced symbols.
-     * The C# and VB files are parsed with Rosalyn to look for declared symbols only.  We then
+     * The C# and VB files are parsed with Roslyn to look for declared symbols only.  We then
      * find any references to those symbol both in the solution and in the disassembled ASP.NET
      * classes.
      */
@@ -63,8 +35,12 @@ namespace DotNETDepends
          */
         public async Task ReadSolutionAsync(String path, AnalysisOutput output)
         {
+            
             var workspace = MSBuildWorkspace.Create();
             var solution = await workspace.OpenSolutionAsync(path).ConfigureAwait(false);
+            
+            RestoreSolution(solution, output);
+
             var depGraph = solution.GetProjectDependencyGraph();
             var dependencyOrderedProjects = depGraph.GetTopologicallySortedProjects();
             //Read all of the projects declared types and references (if ASP.NET)
@@ -85,7 +61,7 @@ namespace DotNETDepends
             if (solutionRoot != null)
             {
                 /**
-                 * These entries come from Rosalyn.  They are the declared types in
+                 * These entries come from Roslyn.  They are the declared types in
                  * each file we walked.
                  */
                 foreach (var entry in dependencies.GetFileEntries())
@@ -103,7 +79,7 @@ namespace DotNETDepends
                         {
                             foreach (var location in reference.Locations)
                             {
-                                //CandidateLocations are guesses by Rosalyn.
+                                //CandidateLocations are guesses by Roslyn.
                                 //Also filter anything we don't have source for
                                 if (location.Location.IsInSource)
                                 {
@@ -142,6 +118,43 @@ namespace DotNETDepends
         }
 
         /**
+         * Runs dotnet restore on the solution.  This fetches any nuget dependencies
+         * so that when we compile with Roslyn or decompile the assembly they are available.
+         */
+        private bool RestoreSolution(Solution solution, AnalysisOutput analysisOutput)
+        {
+            var dotnetPath = SDKTools.GetDotnetPath();
+            if (solution.FilePath != null)
+            {
+                try
+                {
+                    var startInfo = new ProcessStartInfo(dotnetPath)
+                    {
+                        WorkingDirectory = Path.GetDirectoryName(solution.FilePath)
+                    };
+                    //Executes:
+                    //dotnet restore <solutionfile>
+                    startInfo.ArgumentList.Add("restore");
+                    //This is needed for windows projects on linux
+                    startInfo.ArgumentList.Add("/p:EnableWindowsTargeting=true");
+                    startInfo.ArgumentList.Add(solution.FilePath);
+                    startInfo.UseShellExecute = false;
+                    var process = Process.Start(startInfo);
+                    if (process != null)
+                    {
+                        process.WaitForExit();
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    analysisOutput.AddErrorMessage("Exception: " + ex.ToString());
+                }
+            }
+            return false;
+        }
+
+        /**
          * When we find ASP.NET projects, publish the solution with "dotnet publish".
          * This will compile everything and put all of the dependencies in to the output folder
          * so that we can resolve everything when we disassemble the ASP.NET content.
@@ -175,6 +188,7 @@ namespace DotNETDepends
                     startInfo.ArgumentList.Add("-p:PublishReadyToRun=true");
                     startInfo.ArgumentList.Add("--self-contained");
                     startInfo.ArgumentList.Add(solution.FilePath);
+                    startInfo.UseShellExecute = false;
                     var process = Process.Start(startInfo);
                     if (process != null)
                     {
@@ -182,7 +196,7 @@ namespace DotNETDepends
                         return true;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     analysisOutput.AddErrorMessage("Exception: " + ex.ToString());
                 }
@@ -223,7 +237,7 @@ namespace DotNETDepends
          * and if found publishes the solution if it hasn't been.
          * If the project is contains web files it uses the published assemblies to reflect the
          * dependencies and disassembles the generated ASP/Razor pages/components.
-         * It then uses Rosalyn to parse the references of any C# or VB files, regardless of
+         * It then uses Roslyn to parse the references of any C# or VB files, regardless of
          * whether or not it is an ASP.NET project.
          */
         private async Task ProcessProjectAsync(ProjectId projectId, Solution solution, ProjectDependencyGraph depGraph, AnalysisOutput analysisOutput)
@@ -246,17 +260,18 @@ namespace DotNETDepends
                         depEntry.AddDependency(depProject.FilePath);
                     }
                 }
-
+                
                 //Check for ASP.NET files
                 if (ProjectContainsNETWebFiles(project))
                 {
-                    var pubProject = new PublishedWebProject(project, RuntimeInformation.RuntimeIdentifier, PUBLISH_CONFIG, analysisOutput);
+                    var pubProject = new PublishedWebProject(project, RuntimeInformation.RuntimeIdentifier, PUBLISH_CONFIG, dependencies, analysisOutput);
                     if (pubProject.IsSupportedSDK())
                     {
                         //If it is a supported SDK, publish the solution if it hasn't been
                         PublishSolution(solution, analysisOutput);
                         //Read in the corresponding ASP.NET components.
-                        if (pubProject.Analyze(out HashSet<SourceType> foundTypes, analysisOutput))
+                        var foundTypes = new HashSet<SourceType>();
+                        if (await pubProject.Analyze(foundTypes, analysisOutput))
                         {
                             dependencies.AddSourceTypes(foundTypes);
                         }
@@ -264,33 +279,16 @@ namespace DotNETDepends
                     else
                     {
                         analysisOutput.AddErrorMessage("Found unsupported SDK in project: " + project.Name + " sdk: " + pubProject.SDK ?? "null");
-                    }
-                }
-
-                //Process any C# or VB files with Rosalyn
-                var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
-                if (compilation != null)
-                {
-
-                    foreach (var tree in compilation.SyntaxTrees)
-                    {
-
-                        //Make sure we don't add generated files that can get pulled in.
-                        if (tree.FilePath.StartsWith(solutionRoot))
-                        {
-                            //Register the file/type
-                            var fileDep = dependencies.CreateCodeFileEntry(Path.GetRelativePath(solutionRoot, tree.FilePath), compilation.GetSemanticModel(tree), tree);
-                            var walker = new SymbolDefinitionFinder(fileDep);
-                            //walk the syntaxtree to find referencable symbols
-                            walker.Visit(fileDep.Tree?.GetRoot());
-                        }
+                        //Just do the Roslyn analysis
+                        await pubProject.Analyze();
                     }
                 }
                 else
                 {
-                    analysisOutput.AddErrorMessage("Compilation was null for " + project.FilePath);
-                }
+                    var roslynProject = new RoslynProject(project, dependencies, analysisOutput);
+                    await roslynProject.Analyze();
 
+                }
             }
         }
     }

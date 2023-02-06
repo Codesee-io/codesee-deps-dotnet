@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Xml;
 using Disassembler;
+using System.Transactions;
 
 namespace DotNETDepends
 {
@@ -8,21 +9,20 @@ namespace DotNETDepends
      * This class represents an ASP.NET Core or Blazor web project that has
      * had it's solution published.
      */
-    internal class PublishedWebProject
+    internal class PublishedWebProject : RoslynProject
     {
         private readonly string runtime;
         private readonly string config;
-        private readonly Project project;
+
         private string? assemblyName;
         private string? rootNamespace;
         private string? sdk;
         public string? SDK { get { return sdk; } }
 
-        public PublishedWebProject(Project project, string runtime, string config, IErrorReporter errorReporter)
+        public PublishedWebProject(Project project, string runtime, string config, Dependencies dependencies, IErrorReporter errorReporter) : base(project, dependencies, errorReporter)
         {
             this.runtime = runtime;
             this.config = config;
-            this.project = project;
             ReadProjectFile(errorReporter);
         }
 
@@ -62,7 +62,7 @@ namespace DotNETDepends
                     if (xmlDoc.DocumentElement != null)
                     {
                         sdk = xmlDoc.DocumentElement.GetAttribute("Sdk");
-                        
+
                         switch (sdk)
                         {
                             case SupportedSdks.ASP_NET_CORE:
@@ -133,7 +133,7 @@ namespace DotNETDepends
 
         public bool IsSupportedSDK()
         {
-            if(sdk == null)
+            if (sdk == null)
             {
                 return false;
             }
@@ -147,37 +147,34 @@ namespace DotNETDepends
          * 3.  Disassembles the types from the located assembly for type definition and
          *     references.
          */
-        public bool Analyze(out HashSet<SourceType> foundTypes, IErrorReporter errorReporter)
+        public async Task<bool> Analyze(HashSet<SourceType> foundTypes, IErrorReporter errorReporter)
         {
             var assemblyPath = FindAssembly();
             string? solutionDir = Path.GetDirectoryName(project.Solution.FilePath);
             if (assemblyPath != null && sdk != null && solutionDir != null)
             {
-                
+
                 var builder = SourceTypeBuilderFactory.Create(sdk);
                 var projectDir = Path.GetDirectoryName(project.FilePath);
                 if (builder != null && projectDir != null)
                 {
                     var sources = GetSourceFiles();
                     SourceTypeLocator locator = new(builder);
-                    foreach(var source in sources)
+                    foreach (var source in sources)
                     {
                         locator.AddSource(source, projectDir, solutionDir, rootNamespace ?? "");
                     }
                     var reader = new AssemblyReader(assemblyPath, locator, errorReporter);
                     reader.Read();
-                    foundTypes = reader.GetReadTypes();
+                    await base.Analyze();
+                    foundTypes.UnionWith(reader.GetReadTypes());
                     return true;
                 }
-                
+
             }
-            else
-            {
-                errorReporter.AddErrorMessage("Unable to locate assembly for project: " + project.Name);
-            }
-            //return an empty list of types
-            errorReporter.AddErrorMessage("Unable to locate assembly.");
-            foundTypes = new();
+            errorReporter.AddErrorMessage("Unable to locate assembly for project: " + project.Name);
+            //Go ahead and do the C# and VB files
+            await base.Analyze();
             return false;
         }
 
