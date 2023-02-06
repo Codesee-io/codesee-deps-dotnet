@@ -8,13 +8,19 @@ namespace TestDependencyReading
 {
     internal class TestUtils
     {
-        public static string? GetFixturesPath()
+        public static string GetFixturesPath()
         {
-            string workingDir =  Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
-            while(workingDir != null && !workingDir.EndsWith("TestDependencyReading")) {
-                workingDir= Path.GetDirectoryName(workingDir);
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            if (assembly != null && assembly.Location != null)
+            {
+                string? workingDir = Path.GetDirectoryName(assembly.Location);
+                while (workingDir != null && !workingDir.EndsWith("TestDependencyReading"))
+                {
+                    workingDir = Path.GetDirectoryName(workingDir);
+                }
+                return Path.Combine(workingDir ?? "", "Fixtures");
             }
-            return Path.Combine(workingDir, "Fixtures");
+            throw new Exception("Unable to determine fixture directory.");
         }
     }
 }

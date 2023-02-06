@@ -100,7 +100,7 @@ namespace DotNETDepends
                 {
                     foreach (var typeRef in type.TypeReferences)
                     {
-                        if (typeRef.Name.Equals(symbol.Name) && typeRef.Namespace.Equals(symbol.Namespace))
+                        if (typeRef.Name.Equals(symbol.Name) && symbol.Namespace.Equals(typeRef.Namespace))
                         {
                             result.Add(type);
                             break;

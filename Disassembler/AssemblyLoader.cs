@@ -37,7 +37,15 @@ namespace Disassembler
 
         public AssemblyLoader(string assemblyPath) {
             this.assemblyPath = assemblyPath;
-            context = new LocalFolderLoadContext(Path.GetDirectoryName(assemblyPath));
+            var assemDir = Path.GetDirectoryName(assemblyPath);
+            if (assemDir != null)
+            {
+                context = new LocalFolderLoadContext(assemDir);
+            }
+            else
+            {
+                throw new Exception("Unexpected null getting assembly directory.");
+            }
         }
 
         public Assembly? Load()
