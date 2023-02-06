@@ -31,5 +31,5 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "donetdepends.tar.gz"
+          artifacts: "dotnetdepends.tar.gz"
 
