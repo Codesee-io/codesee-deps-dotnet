@@ -27,7 +27,7 @@ jobs:
       - name: Run Tests
         run: dotnet test
       - name: Archive Release
-        run: tar -zcvf /dotnetdepends.tar.gz ./output/
+        run: tar -zcvf dotnetdepends.tar.gz ./output/
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
