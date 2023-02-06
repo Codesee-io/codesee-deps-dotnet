@@ -1,0 +1,34 @@
+name: codesee-deps-dotnet release
+
+on: [push]
+  tags:
+    - 'v*'
+env:
+  NET_VERSION: net7.0
+  NET_ACTION_VERSION: '7.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ env.NET_ACTION_VERSION }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.NET_ACTION_VERSION }}
+          dotnet-quality: 'ga'
+      - name: Restore
+        run: dotnet restore
+      - name: Publish
+        run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release -o output
+      - name: Run Tests
+        run: dotnet test
+      - name: Archive Release
+        run: tar -zcvf /dotnetdepends.tar.gz ./output/
+      - name: Create Release
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "donetdepends.tar.gz"
+
