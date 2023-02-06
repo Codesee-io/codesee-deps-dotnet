@@ -79,7 +79,7 @@ namespace DotNETDepends
             {
                 return null;
             }
-            return FindNamespaceFromViewImports(Path.GetDirectoryName(startDir), projectDir, importFileName, importFileExtension, out typeRoot);
+            return FindNamespaceFromViewImports(Path.GetDirectoryName(startDir) ?? "", projectDir, importFileName, importFileExtension, out typeRoot);
 
         }
         /*
@@ -89,28 +89,30 @@ namespace DotNETDepends
         {
             var relativePath = Path.GetRelativePath(projectDir, path);
             relativePath = Path.GetDirectoryName(relativePath);
-            if (relativePath.StartsWith(Path.DirectorySeparatorChar))
+            if (relativePath != null)
             {
-                relativePath = relativePath.Substring(1);
-            }
-            if (relativePath.EndsWith(Path.DirectorySeparatorChar))
-            {
-                relativePath = relativePath[..^1];
-            }
-            relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '.');
-            if (rootNamespace != null && rootNamespace.Length != 0)
-            {
-                if (relativePath.Length > 0)
+                if (relativePath.StartsWith(Path.DirectorySeparatorChar))
                 {
-                    return rootNamespace + "." + relativePath;
+                    relativePath = relativePath.Substring(1);
                 }
-                else
+                if (relativePath.EndsWith(Path.DirectorySeparatorChar))
                 {
-                    return rootNamespace;
+                    relativePath = relativePath[..^1];
+                }
+                relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '.');
+                if (rootNamespace != null && rootNamespace.Length != 0)
+                {
+                    if (relativePath.Length > 0)
+                    {
+                        return rootNamespace + "." + relativePath;
+                    }
+                    else
+                    {
+                        return rootNamespace;
+                    }
                 }
             }
-
-            return relativePath;
+            return relativePath ?? "";
         }
     }
 
@@ -124,7 +126,7 @@ namespace DotNETDepends
             var ns = ReadNamespaceFromFile(filePath);
             if (ns == null)
             {
-                ns = FindNamespaceFromViewImports(Path.GetDirectoryName(filePath), projectDir, "_Imports", ".razor", out string? typeRoot);
+                ns = FindNamespaceFromViewImports(Path.GetDirectoryName(filePath) ?? "", projectDir, "_Imports", ".razor", out string? typeRoot);
                 ns = DetermineNamespaceFromPath(filePath, ns ?? rootNamespace, typeRoot ?? projectDir);
             }
             ns ??= "";
@@ -145,7 +147,7 @@ namespace DotNETDepends
             var ns = ReadNamespaceFromFile(filePath);
             if (ns == null)
             {
-                ns = FindNamespaceFromViewImports(Path.GetDirectoryName(filePath), projectDir, "_ViewImports", Path.GetExtension(filePath), out string? typeRoot);
+                ns = FindNamespaceFromViewImports(Path.GetDirectoryName(filePath) ?? "", projectDir, "_ViewImports", Path.GetExtension(filePath), out string? typeRoot);
                 ns = DetermineNamespaceFromPath(filePath, ns ?? rootNamespace, typeRoot ?? projectDir);
             }
             ns ??= "";
@@ -160,15 +162,19 @@ namespace DotNETDepends
         {
             var relativeFile = Path.GetRelativePath(projectDir, filePath);
             var relativeDir = Path.GetDirectoryName(relativeFile);
-            if (relativeDir.StartsWith(Path.DirectorySeparatorChar))
+            if (relativeDir != null)
             {
-                relativeDir = relativeDir.Substring(1);
+                if (relativeDir.StartsWith(Path.DirectorySeparatorChar))
+                {
+                    relativeDir = relativeDir.Substring(1);
+                }
+                if (relativeDir.EndsWith(Path.DirectorySeparatorChar))
+                {
+                    relativeDir = relativeDir[..^1];
+                }
+                return relativeDir.Replace(Path.DirectorySeparatorChar, '_') + "_" + Path.GetFileNameWithoutExtension(filePath);
             }
-            if (relativeDir.EndsWith(Path.DirectorySeparatorChar))
-            {
-                relativeDir = relativeDir[..^1];
-            }
-            return relativeDir.Replace(Path.DirectorySeparatorChar, '_') + "_" + Path.GetFileNameWithoutExtension(filePath);
+            return "";
         }
     }
     internal class SourceTypeBuilderFactory

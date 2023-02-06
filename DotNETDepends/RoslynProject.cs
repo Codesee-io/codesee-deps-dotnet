@@ -41,19 +41,20 @@ namespace DotNETDepends
         protected readonly Project project;
         private readonly IErrorReporter errorReporter;
         private readonly Dependencies dependencies;
-        private readonly string solutionRoot;
+        private readonly string? solutionRoot;
         public RoslynProject(Project project, Dependencies dependencies, IErrorReporter errorReporter)
         {
             this.project = project;
             this.dependencies = dependencies;
             this.errorReporter = errorReporter;
             solutionRoot = Path.GetDirectoryName(project.Solution.FilePath);
+
         }
 
         public async Task Analyze()
         {
             var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
-            if (compilation != null)
+            if (compilation != null && solutionRoot != null)
             {
 
                 foreach (var tree in compilation.SyntaxTrees)

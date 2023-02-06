@@ -211,21 +211,25 @@ namespace DotNETDepends
         {
             if (project.FilePath != null)
             {
-                var dirInfo = new DirectoryInfo(Path.GetDirectoryName(project.FilePath));
-                var cshtml = dirInfo.GetFiles("*.cshtml", SearchOption.AllDirectories);
-                if (cshtml.Length > 0)
+                var projDir = Path.GetDirectoryName(project.FilePath);
+                if (projDir != null)
                 {
-                    return true;
-                }
-                var vbhtml = dirInfo.GetFiles("*.vbhtml", SearchOption.AllDirectories);
-                if (vbhtml.Length > 0)
-                {
-                    return true;
-                }
-                var razor = dirInfo.GetFiles("*.razor", SearchOption.AllDirectories);
-                if (razor.Length > 0)
-                {
-                    return true;
+                    var dirInfo = new DirectoryInfo(projDir);
+                    var cshtml = dirInfo.GetFiles("*.cshtml", SearchOption.AllDirectories);
+                    if (cshtml.Length > 0)
+                    {
+                        return true;
+                    }
+                    var vbhtml = dirInfo.GetFiles("*.vbhtml", SearchOption.AllDirectories);
+                    if (vbhtml.Length > 0)
+                    {
+                        return true;
+                    }
+                    var razor = dirInfo.GetFiles("*.razor", SearchOption.AllDirectories);
+                    if (razor.Length > 0)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;

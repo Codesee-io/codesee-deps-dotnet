@@ -53,9 +53,9 @@ namespace Disassembler
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
+                //ignore
             }
             return result;
         }

@@ -40,10 +40,14 @@ namespace DotNETDepends
         private List<string> GetSourceFiles()
         {
             var result = new List<string>();
-            var dirInfo = new DirectoryInfo(Path.GetDirectoryName(project.FilePath));
-            AddFilesToList(result, dirInfo.GetFiles("*.cshtml", SearchOption.AllDirectories));
-            AddFilesToList(result, dirInfo.GetFiles("*.vbhtml", SearchOption.AllDirectories));
-            AddFilesToList(result, dirInfo.GetFiles("*.razor", SearchOption.AllDirectories));
+            var dir = Path.GetDirectoryName(project.FilePath);
+            if (dir != null)
+            {
+                var dirInfo = new DirectoryInfo(dir);
+                AddFilesToList(result, dirInfo.GetFiles("*.cshtml", SearchOption.AllDirectories));
+                AddFilesToList(result, dirInfo.GetFiles("*.vbhtml", SearchOption.AllDirectories));
+                AddFilesToList(result, dirInfo.GetFiles("*.razor", SearchOption.AllDirectories));
+            }
             return result;
         }
 
@@ -105,7 +109,7 @@ namespace DotNETDepends
         {
             if (project.FilePath != null && assemblyName != null)
             {
-                var binRoot = Path.Combine(new string[] { Path.GetDirectoryName(project.FilePath), "bin", config });
+                var binRoot = Path.Combine(new string[] { Path.GetDirectoryName(project.FilePath)?? "", "bin", config });
                 DirectoryInfo dirInfo = new(binRoot);
                 var dirs = dirInfo.GetDirectories();
                 string? assemPath = null;
