@@ -135,7 +135,10 @@ namespace DotNETDepends
                     //Executes:
                     //dotnet restore <solutionfile>
                     startInfo.ArgumentList.Add("restore");
+                    //This is needed for windows projects on linux
+                    startInfo.ArgumentList.Add("/p:EnableWindowsTargeting=true");
                     startInfo.ArgumentList.Add(solution.FilePath);
+
                     var process = Process.Start(startInfo);
                     if (process != null)
                     {
