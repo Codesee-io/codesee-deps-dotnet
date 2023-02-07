@@ -7,11 +7,14 @@ namespace DotNETDepends.Output
     {
         public Link(string from, string to)
         {
-            From = from;
-            To = to;
+            this.from = from;
+            this.to = to;
         }
-        public string From { get; set; }
-        public string To { get; set; }
+        //When from and to are deserialized by Node, it expects lower case
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Compatibility")]
+        public string from { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Compatibility")]
+        public string to { get; set; }
     }
 
     public class AnalysisOutput : IErrorReporter
