@@ -12,15 +12,15 @@ namespace TestDependencyReading
         {
             foreach (var link in found)
             {
-                expected.TryGetValue(link.From, out var expectedTo);
+                expected.TryGetValue(link.from, out var expectedTo);
                 Assert.IsNotNull(expectedTo);
-                Assert.AreEqual(expectedTo, link.To);
+                Assert.AreEqual(expectedTo, link.to);
             }
         }
 
         private bool LinkMatches(string from, string to, Link link)
         {
-            return link.To.Equals(FixPath(to)) && link.From.Equals(FixPath(from));
+            return link.to.Equals(FixPath(to)) && link.from.Equals(FixPath(from));
         }
 
         string FixPath(string path)
