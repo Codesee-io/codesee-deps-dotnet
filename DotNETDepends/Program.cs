@@ -20,6 +20,12 @@ class Program
     {
         if (args.Length == 1 && File.Exists(args[0]))
         {
+            if ("--version".Equals(args[0]))
+            {
+                PrintVersion();
+                Environment.Exit(0);
+                return;
+            }
             if (!ValidateFileNameInput(args[0]))
             {
                 throw new Exception("Invalid command line argument.");
@@ -52,8 +58,12 @@ class Program
         }
 
     }
-
-    private static bool validateFileNameInput(string v)
+    private static void PrintVersion()
+    {
+        //!!When you change this version be sure to update the expected version in dot-net.ts in the codesee repo!!
+        Console.WriteLine("0.1.0");
+    }
+    private static bool ValidateFileNameInput(string v)
     {
         throw new NotImplementedException();
     }
