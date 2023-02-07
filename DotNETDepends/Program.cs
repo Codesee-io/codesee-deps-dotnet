@@ -63,8 +63,4 @@ class Program
         //!!When you change this version be sure to update the expected version in dot-net.ts in the codesee repo!!
         Console.WriteLine("0.1.0");
     }
-    private static bool ValidateFileNameInput(string v)
-    {
-        throw new NotImplementedException();
-    }
 }
