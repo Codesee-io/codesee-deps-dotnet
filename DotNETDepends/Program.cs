@@ -18,7 +18,7 @@ class Program
      */
     static async Task Main(string[] args)
     {
-        if (args.Length == 1 && File.Exists(args[0]))
+        if (args.Length == 1)
         {
             if ("--version".Equals(args[0]))
             {
