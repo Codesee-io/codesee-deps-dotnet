@@ -35,7 +35,7 @@ namespace DotNETDepends
          */
         public async Task ReadSolutionAsync(String path, AnalysisOutput output)
         {
-            
+            Console.WriteLine("Reading solution: " + path);
             var workspace = MSBuildWorkspace.Create();
             var solution = await workspace.OpenSolutionAsync(path).ConfigureAwait(false);
             
@@ -171,6 +171,7 @@ namespace DotNETDepends
             var dotnetPath = SDKTools.GetDotnetPath();
             if (solution.FilePath != null)
             {
+                Console.WriteLine("Publishing Solution: " + solution.FilePath);
                 try
                 {
                     var startInfo = new ProcessStartInfo(dotnetPath)
@@ -252,6 +253,7 @@ namespace DotNETDepends
             var solutionRoot = Path.GetDirectoryName(solution.FilePath);
             if (project != null && project.FilePath != null && solutionRoot != null)
             {
+                Console.WriteLine("Processing project: " + project.FilePath);
                 var depEntry = dependencies.CreateProjectEntry(Path.GetRelativePath(solutionRoot, project.FilePath));
 
                 var projectDependencies = depGraph.GetProjectsThatThisProjectDirectlyDependsOn(projectId);
@@ -282,7 +284,7 @@ namespace DotNETDepends
                     }
                     else
                     {
-                        analysisOutput.AddErrorMessage("Found unsupported SDK in project: " + project.Name + " sdk: " + pubProject.SDK ?? "null");
+                        Console.WriteLine("Analizing web project with Rosalyn: " + project.FilePath);
                         //Just do the Roslyn analysis
                         await pubProject.Analyze();
                     }
