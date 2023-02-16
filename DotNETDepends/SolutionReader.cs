@@ -284,7 +284,7 @@ namespace DotNETDepends
                     }
                     else
                     {
-                        Console.WriteLine("Analizing web project with Rosalyn: " + project.FilePath);
+                        Console.WriteLine("Analyzing web project with Roslyn: " + project.FilePath);
                         //Just do the Roslyn analysis
                         await pubProject.Analyze();
                     }
