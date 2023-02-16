@@ -26,15 +26,19 @@ jobs:
         run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime linux-x64 --self-contained false --configuration Release -o ./output
       - name: Publish MacOS
         run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime osx-x64 --self-contained false --configuration Release -o ./osx/output
+      - name: Publish Windows x64
+        run: dotnet publish ./DotNETDepends/DotNETDepends.csproj --framework ${{ env.NET_VERSION }} --runtime win-x64 --self-contained false --configuration Release -o ./win/output
       - name: Run Tests
         run: dotnet test
       - name: Archive Linux x64 Release
         run: tar -zcvf dotnetdepends.tar.gz ./output/
       - name: Archive OSX x64 Release
         run: tar -zcvf dotnetdepends-osx-x64.tar.gz ./osx/output/
+      - name: Archive OSX x64 Release
+        run: tar -zcvf dotnetdepends-win-x64.tar.gz ./win/output/
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "dotnetdepends.tar.gz,dotnetdepends-osx-x64.tar.gz"
+          artifacts: "dotnetdepends.tar.gz,dotnetdepends-osx-x64.tar.gz,dotnetdepends-win-x64.tar.gz"
           artifactErrorsFailBuild: true
 
