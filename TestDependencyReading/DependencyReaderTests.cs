@@ -53,9 +53,12 @@ namespace TestDependencyReading
             SolutionReader reader = new();
             await reader.ReadSolutionAsync(slnFile, output).ConfigureAwait(false);
             Assert.IsNotNull(output);
-            Assert.AreEqual(2, output.Links.Length);
+            Assert.AreEqual(3, output.Links.Length);
             AssertLinks(new Dictionary<string, string>
             {
+                { FixPath("NetCoreMVC.sln"),
+                  FixPath("NetCoreMVC\\NetCoreMVC.csproj")
+                },
                 { FixPath("NetCoreMVC\\Controllers\\HomeController.cs"),
                   FixPath("NetCoreMVC\\Models\\ErrorViewModel.cs")
                 },
@@ -73,30 +76,41 @@ namespace TestDependencyReading
             SolutionReader reader = new();
             await reader.ReadSolutionAsync(slnFile, output).ConfigureAwait(false);
             Assert.IsNotNull(output);
-            Assert.AreEqual(3, output.Links.Length);
+            Assert.AreEqual(5, output.Links.Length);
 
             int matches = 0;
             foreach (var link in output.Links)
             {
+                if (LinkMatches("WinFormsApp1.sln", "WinFormsApp1\\WinFormsApp1.vbproj", link))
+                {
+                    matches++;
+                    continue;
+                }
                 if (LinkMatches("WinFormsApp1\\Form1.vb", "WinFormsApp1\\DoSomething.vb", link))
                 {
                     matches++;
                     continue;
                 }
-                if (LinkMatches("WinFormsApp1\\My Project\\Application.Designer.vb",
+                if (LinkMatches("WinFormsApp1\\Form1.Designer.vb",
+                "WinFormsApp1\\Form1.vb", link))
+                {
+                    matches++;
+                    continue;
+                }
+                if (LinkMatches("WinFormsApp1\\Form1.vb",
                 "WinFormsApp1\\Form1.Designer.vb", link))
                 {
                     matches++;
                     continue;
                 }
                 if (LinkMatches("WinFormsApp1\\My Project\\Application.Designer.vb",
-                "WinFormsApp1\\Form1.vb", link))
+                "WinFormsApp1\\ApplicationEvents.vb", link))
                 {
                     matches++;
                     continue;
                 }
             }
-            Assert.AreEqual(3, matches);
+            Assert.AreEqual(5, matches);
         }
 
         [TestMethod]
@@ -107,10 +121,15 @@ namespace TestDependencyReading
             SolutionReader reader = new();
             await reader.ReadSolutionAsync(slnFile, output).ConfigureAwait(false);
             Assert.IsNotNull(output);
-            Assert.AreEqual(3, output.Links.Length);
+            Assert.AreEqual(6, output.Links.Length);
             int matches = 0;
             foreach (var link in output.Links)
             {
+                if (LinkMatches("CSharpWinApp.sln", "CSharpWinApp\\CSharpWinApp.csproj", link))
+                {
+                    matches++;
+                    continue;
+                }
                 if (LinkMatches("CSharpWinApp\\Form1.cs", "CSharpWinApp\\DoSomething.cs", link))
                 {
                     matches++;
@@ -128,8 +147,22 @@ namespace TestDependencyReading
                     matches++;
                     continue;
                 }
+                //These are both partial classes
+                if (LinkMatches("CSharpWinApp\\Form1.cs",
+                "CSharpWinApp\\Form1.Designer.cs", link))
+                {
+                    matches++;
+                    continue;
+                }
+                //These are both partial classes
+                if (LinkMatches("CSharpWinApp\\Form1.Designer.cs",
+                "CSharpWinApp\\Form1.cs", link))
+                {
+                    matches++;
+                    continue;
+                }
             }
-            Assert.AreEqual(3, matches); ;
+            Assert.AreEqual(6, matches); ;
 
         }
 
