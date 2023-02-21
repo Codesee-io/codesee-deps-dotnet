@@ -25,13 +25,9 @@ namespace DotNETDepends
             return dependency;
         }
 
-        public DependencyEntry CreateCodeFileEntry(string filePath, SemanticModel semantic, SyntaxTree tree)
+        public DependencyEntry CreateCodeFileEntry(string filePath)
         {
-            var dependency = new DependencyEntry(filePath, EntryType.File)
-            {
-                Semantic = semantic,
-                Tree = tree
-            };
+            var dependency = new DependencyEntry(filePath, EntryType.File);
             entries[filePath] = dependency;
             return dependency;
         }

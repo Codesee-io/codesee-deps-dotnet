@@ -1,7 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.FindSymbols;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Disassembler;
@@ -38,24 +36,74 @@ namespace DotNETDepends
             Console.WriteLine("Reading solution: " + path);
             var workspace = MSBuildWorkspace.Create();
             var solution = await workspace.OpenSolutionAsync(path).ConfigureAwait(false);
-            
+
             RestoreSolution(solution, output);
 
             var depGraph = solution.GetProjectDependencyGraph();
+
+            CreateProjectDependencies(solution, depGraph);
+
             var dependencyOrderedProjects = depGraph.GetTopologicallySortedProjects();
-            //Read all of the projects declared types and references (if ASP.NET)
+
             foreach (var projectId in dependencyOrderedProjects)
             {
-                await ProcessProjectAsync(projectId, solution, depGraph, output).ConfigureAwait(false);
+                var project = solution.GetProject(projectId);
+                if (project != null)
+                {
+                    await project.GetCompilationAsync().ConfigureAwait(false);
+                }
             }
-            await ResolveDepenedenciesAsync(solution).ConfigureAwait(false);
+            foreach (var projectId in dependencyOrderedProjects)
+            {
+                await ProcessProjectAsync(projectId, solution, output).ConfigureAwait(false);
+                //once we process the project, remove it so that all of the compilation, ASTs, etc
+                //can be garbage collected.  This results in a new solution
+                solution = solution.RemoveProject(projectId);
+            }
+
+
+            ResolveDependencies(solution);
             dependencies.GetLinks(output);
         }
 
         /**
-         * Processes all of the declared and referenced symbols we collected
+         * Creates the dependency graph of the solution and all it's projects.  Has to be done
+         * before we start removing projects from the solution
          */
-        private async Task ResolveDepenedenciesAsync(Solution solution)
+        private void CreateProjectDependencies(Solution solution, ProjectDependencyGraph depGraph)
+        {
+            var solutionDir = Path.GetDirectoryName(solution.FilePath);
+
+            if (solution.FilePath != null && solutionDir != null)
+            {
+                DependencyEntry solutionEntry = dependencies.CreateProjectEntry(Path.GetFileName(solution.FilePath));
+
+                foreach (var project in solution.Projects)
+                {
+                    if (project.FilePath != null)
+                    {
+                        var projectRelativePath = Path.GetRelativePath(solutionDir, project.FilePath);
+                        solutionEntry.AddDependency(projectRelativePath);
+                        DependencyEntry projectEntry = dependencies.CreateProjectEntry(projectRelativePath);
+                        var depProjects = depGraph.GetProjectsThatDirectlyDependOnThisProject(project.Id);
+                        foreach (var depProject in depProjects)
+                        {
+                            var resolved = solution.GetProject(depProject);
+                            if (resolved != null && resolved.FilePath != null)
+                            {
+                                projectEntry.AddDependency(Path.GetRelativePath(solutionDir, resolved.FilePath));
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        /**
+        * Processes all of the declared and referenced symbols we collected
+        */
+        private void ResolveDependencies(Solution solution)
         {
             var solutionRoot = Path.GetDirectoryName(solution.FilePath);
             if (solutionRoot != null)
@@ -64,7 +112,9 @@ namespace DotNETDepends
                  * These entries come from Roslyn.  They are the declared types in
                  * each file we walked.
                  */
-                foreach (var entry in dependencies.GetFileEntries())
+                var fileEntries = dependencies.GetFileEntries();
+                Console.WriteLine("Resolving references for " + fileEntries.Count + " files.");
+                foreach (var entry in fileEntries)
                 {
 
                     foreach (var symbol in entry.Symbols)
@@ -73,23 +123,17 @@ namespace DotNETDepends
                          * For every symbol declaration we found, find all references in the solution to that symbol.
                          * This will only cover C# abd VB source files.
                          */
-                        var references = await SymbolFinder.FindReferencesAsync(symbol, solution).ConfigureAwait(false);
-
-                        foreach (var reference in references)
+                        foreach (var otherEntry in dependencies.GetFileEntries())
                         {
-                            foreach (var location in reference.Locations)
+                            if (otherEntry != entry)
                             {
-                                //CandidateLocations are guesses by Roslyn.
-                                //Also filter anything we don't have source for
-                                if (location.Location.IsInSource)
+                                if (otherEntry.ReferencesSymbol(symbol))
                                 {
-                                    //Record the reference
-                                    var path = location.Location.SourceTree.FilePath;
-                                    var sourceEntry = dependencies.GetEntry(Path.GetRelativePath(solutionRoot, path));
-                                    sourceEntry?.AddDependency(entry.FilePath);
+                                    otherEntry.AddDependency(entry.FilePath);
                                 }
                             }
                         }
+
                         /**
                          * Now look for references in the ASP.NET file we disassembled.
                          */
@@ -100,6 +144,7 @@ namespace DotNETDepends
                         }
 
                     }
+                    entry.Symbols.Clear();
                 }
                 /**
                  * Find dependencies within all of the decompiled source types
@@ -117,11 +162,12 @@ namespace DotNETDepends
             }
         }
 
+
         /**
          * Runs dotnet restore on the solution.  This fetches any nuget dependencies
          * so that when we compile with Roslyn or decompile the assembly they are available.
          */
-        private bool RestoreSolution(Solution solution, AnalysisOutput analysisOutput)
+        private static bool RestoreSolution(Solution solution, AnalysisOutput analysisOutput)
         {
             var dotnetPath = SDKTools.GetDotnetPath();
             if (solution.FilePath != null)
@@ -245,7 +291,7 @@ namespace DotNETDepends
          * It then uses Roslyn to parse the references of any C# or VB files, regardless of
          * whether or not it is an ASP.NET project.
          */
-        private async Task ProcessProjectAsync(ProjectId projectId, Solution solution, ProjectDependencyGraph depGraph, AnalysisOutput analysisOutput)
+        private async Task ProcessProjectAsync(ProjectId projectId, Solution solution, AnalysisOutput analysisOutput)
         {
 
             var project = solution.GetProject(projectId);
@@ -254,19 +300,7 @@ namespace DotNETDepends
             if (project != null && project.FilePath != null && solutionRoot != null)
             {
                 Console.WriteLine("Processing project: " + project.FilePath);
-                var depEntry = dependencies.CreateProjectEntry(Path.GetRelativePath(solutionRoot, project.FilePath));
 
-                var projectDependencies = depGraph.GetProjectsThatThisProjectDirectlyDependsOn(projectId);
-                //Add all dependent projects to the entry
-                foreach (var depId in projectDependencies)
-                {
-                    var depProject = solution.GetProject(depId);
-                    if (depProject != null && depProject.FilePath != null)
-                    {
-                        depEntry.AddDependency(depProject.FilePath);
-                    }
-                }
-                
                 //Check for ASP.NET files
                 if (ProjectContainsNETWebFiles(project))
                 {
@@ -296,6 +330,7 @@ namespace DotNETDepends
 
                 }
             }
+
         }
     }
 }

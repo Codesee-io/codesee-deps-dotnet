@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace DotNETDepends
 {
@@ -21,10 +16,8 @@ namespace DotNETDepends
         public readonly String FilePath;
         public readonly EntryType Type;
         public HashSet<ISymbol> Symbols = new(SymbolEqualityComparer.Default);
-       //This is the Roslyn semantic model.  Only valid if Type == File.  
-        public SemanticModel? Semantic { get; set; }
-        //SyntaxTree of a C# or VB file.  Comes from Roslyn.
-        public SyntaxTree? Tree { get; set; }
+        private readonly HashSet<string> References = new();
+
         //File dependencies of the file
         public HashSet<string> Dependencies { get; } = new HashSet<string>();
 
@@ -32,17 +25,32 @@ namespace DotNETDepends
         {
             FilePath = filePath;
             Type = type;
-            
+
+        }
+
+        public void AddReference(ISymbol symbol)
+        {
+            //ToDisplayString formats the symbol as <namespace>.<typeName>
+            //stringifying this helps with the lookup, as we can't use a 
+            //HashSet<ISymbol>::Contains to look them up
+            References.Add(symbol.ToDisplayString());
+        }
+
+        public bool ReferencesSymbol(ISymbol symbol)
+        {
+            //ToDisplayString formats the symbol as <namespace>.<typeName>
+            var synName = symbol.ToDisplayString();
+            return References.Contains(synName);
         }
 
         public void AddDependency(string dependency)
         {
-            if(dependency != FilePath)
+            if (dependency != FilePath)
             {
                 Dependencies.Add(dependency);
             }
         }
 
-        
+
     }
 }
