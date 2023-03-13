@@ -110,26 +110,29 @@ namespace DotNETDepends
             if (project.FilePath != null && assemblyName != null)
             {
                 var binRoot = Path.Combine(new string[] { Path.GetDirectoryName(project.FilePath)?? "", "bin", config });
-                DirectoryInfo dirInfo = new(binRoot);
-                var dirs = dirInfo.GetDirectories();
-                string? assemPath = null;
-                if (dirs.Length == 1)
+                if (Path.Exists(binRoot))
                 {
-                    assemPath = Path.Combine(new string[] { binRoot, dirs[0].Name, runtime, "publish", assemblyName });
-                    if (File.Exists(assemPath))
+                    DirectoryInfo dirInfo = new(binRoot);
+                    var dirs = dirInfo.GetDirectories();
+                    string? assemPath = null;
+                    if (dirs.Length == 1)
+                    {
+                        assemPath = Path.Combine(new string[] { binRoot, dirs[0].Name, runtime, "publish", assemblyName });
+                        if (File.Exists(assemPath))
+                        {
+                            return assemPath;
+                        }
+                        assemPath = Path.Combine(new string[] { binRoot, dirs[0].Name, runtime, assemblyName });
+                        if (File.Exists(assemPath))
+                        {
+                            return assemPath;
+                        }
+                        assemPath = Path.Combine(new string[] { binRoot, dirs[0].Name, assemblyName });
+                    }
+                    if (assemPath != null && File.Exists(assemPath))
                     {
                         return assemPath;
                     }
-                    assemPath = Path.Combine(new string[] { binRoot, dirs[0].Name, runtime, assemblyName });
-                    if (File.Exists(assemPath))
-                    {
-                        return assemPath;
-                    }
-                    assemPath = Path.Combine(new string[] { binRoot, dirs[0].Name, assemblyName });
-                }
-                if (assemPath != null && File.Exists(assemPath))
-                {
-                    return assemPath;
                 }
             }
             return null;
