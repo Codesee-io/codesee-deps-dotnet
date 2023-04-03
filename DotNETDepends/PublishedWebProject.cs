@@ -105,6 +105,7 @@ namespace DotNETDepends
         /*
          * Locates the compiled assembly in the output folder (bin)
          */
+
         private string? FindAssembly()
         {
             if (project.FilePath != null && assemblyName != null)
